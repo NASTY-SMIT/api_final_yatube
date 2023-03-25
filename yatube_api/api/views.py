@@ -1,7 +1,6 @@
 from rest_framework import filters, mixins, permissions, viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from rest_framework.exceptions import NotAuthenticated
 
 from posts.models import Group, Post, Comment
 from .permissions import IsAuthorOrReadOnly
@@ -29,7 +28,7 @@ class GroupViewSet(viewsets.ReadOnlyModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (IsAuthorOrReadOnly,)
+    permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly,)
 
     def get_queryset(self):
         post_id = self.kwargs.get("post_id")
@@ -40,8 +39,6 @@ class CommentViewSet(viewsets.ModelViewSet):
         post_id = self.kwargs.get("post_id")
         if self.request.user.is_authenticated:
             serializer.save(post_id=post_id, author=self.request.user)
-        else:
-            raise NotAuthenticated('Только для авторизованных пользователей')
 
 
 class FollowViewSet(mixins.CreateModelMixin,
